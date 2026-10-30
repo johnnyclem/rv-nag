@@ -14,14 +14,8 @@ class MeetingDetector {
         
         // Check for Google Meet app or browser processes (basic)
         let running = NSWorkspace.shared.runningApplications
-        let meetingBundles = ["us.zoom.xos", "com.google.Chrome", "com.microsoft.edgemac", "com.apple.Safari"]
-        // We can't easily check tab titles without Accessibility, so for Meet we only flag if a dedicated Meet app is running
-        // or if user has configured it. For now, primarily Zoom.
-        if running.contains(where: { $0.bundleIdentifier?.contains("zoom") == true || $0.localizedName?.lowercased().contains("zoom") == true }) {
-            return isZoomInMeeting() // already checked
-        }
-        
-        // Optional: check for "Google Meet" specific
+        // We can't easily check browser tab titles without Accessibility, so Meet is only detected
+        // when a dedicated Meet app (e.g. a Chrome PWA) is running. Zoom was handled above.
         if running.contains(where: { $0.localizedName?.lowercased().contains("meet") == true }) {
             return true
         }

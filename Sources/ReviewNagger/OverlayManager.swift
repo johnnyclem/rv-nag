@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import ReviewNaggerCore
 
 class OverlayManager {
     static let shared = OverlayManager()
@@ -7,15 +8,25 @@ class OverlayManager {
     private var overlayWindows: [NSWindow] = []
     private var alertWindows: [NSWindow] = []
     
+    /// The item the current overlay/windows are about, if any.
+    private(set) var presentedItemID: String?
+    
     func clearAll() {
         overlayWindows.forEach { $0.orderOut(nil) }
         alertWindows.forEach { $0.orderOut(nil) }
         overlayWindows.removeAll()
         alertWindows.removeAll()
+        presentedItemID = nil
+    }
+    
+    /// Clears the overlay only if it belongs to `id`, so dismissing one PR doesn't hide another's.
+    func clear(for id: String) {
+        if presentedItemID == id { clearAll() }
     }
     
     func present(for item: ReviewItem, level: EscalationLevel) {
         clearAll()
+        presentedItemID = item.id
         
         switch level {
         case .gentleNudge, .brighter:
@@ -127,7 +138,6 @@ class OverlayManager {
         case .snooze:
             EscalationManager.shared.snooze(item.id, minutes: 30)
         }
-        clearAll()
     }
 }
 
@@ -137,6 +147,8 @@ class FullScreenPanel: NSPanel {
         return frameRect
     }
 }
+
+enum AlertAction {
     case open, acknowledge, snooze
 }
 
